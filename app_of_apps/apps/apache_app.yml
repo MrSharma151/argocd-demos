@@ -1,18 +1,30 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: apache-child             # Child app name
+  # Name of the Apache child application
+  name: apache-child
   namespace: argocd
 spec:
-  project: default
+  # ArgoCD project
+  project: devops-project
+
   source:
-    repoURL: https://github.com/LondheShubham153/argocd-demos.git # Repo containing child apps(that you have forked and cloned earlier)
+    # Git repository containing application manifests
+    repoURL: https://github.com/MrSharma151/argocd-demos.git
+    # Git branch to track
     targetRevision: main
-    path: cli_approach/apache    # path of Apache app in `argocd-demos` repo
+    # Path of Apache manifests inside the repo
+    path: cli_approach/apache
+
   destination:
-    server: https://172.31.6.84:33893 # Replace with your Cluster Url, To get run: `argocd cluster list`
-    namespace: default
+    # In-cluster Kubernetes API (BEST PRACTICE)
+    server: https://kubernetes.default.svc
+    # Dedicated namespace for Apache app
+    namespace: apache
+
   syncPolicy:
     automated:
+      # Remove resources deleted from Git
       prune: true
+      # Revert manual changes automatically
       selfHeal: true

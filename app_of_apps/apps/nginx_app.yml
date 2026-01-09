@@ -1,17 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: nginx-child              # Child app name
+  # Name of the NGINX child application
+  name: nginx-child
   namespace: argocd
 spec:
-  project: default
+  project: devops-project
+
   source:
-    repoURL: https://github.com/LondheShubham153/argocd-demos.git # Repo containing child apps(that you have forked and cloned earlier)
+    # Git repository containing NGINX manifests
+    repoURL: https://github.com/MrSharma151/argocd-demos.git
     targetRevision: main
-    path: ui_approach/nginx      # path of Nginx app in `argocd-demos` repo
+    # Path of NGINX app deployed earlier via UI approach
+    path: ui_approach/nginx
+
   destination:
-    server: https://172.31.6.84:33893 # Replace with your Cluster Url, To get run: `argocd cluster list`
-    namespace: default           # Deploys into default namespace
+    # In-cluster Kubernetes API
+    server: https://kubernetes.default.svc
+    # Dedicated namespace for NGINX
+    namespace: nginx
+
   syncPolicy:
     automated:
       prune: true

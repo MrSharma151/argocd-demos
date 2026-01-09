@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  # Name of the ArgoCD Project
+  name: devops-project
+
+  # AppProject must always be created in argocd namespace
+  namespace: argocd
+
+spec:
+  # Description of the project (good for documentation)
+  description: DevOps practice project managed using ArgoCD GitOps
+
+  # Allowed Git repositories for this project
+  sourceRepos:
+    - https://github.com/MrSharma151/argocd-demos.git
+
+  # Allowed destination clusters and namespaces
+  destinations:
+    # In-cluster Kubernetes
+    - server: https://kubernetes.default.svc
+      namespace: '*'
+
+  # Allow all cluster-scoped resources (for learning)
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  # Allow all namespace-scoped resources
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  # Roles can be added later (RBAC)
+  # roles:
+  #   - name: read-only
+  #     description: Read-only access to applications

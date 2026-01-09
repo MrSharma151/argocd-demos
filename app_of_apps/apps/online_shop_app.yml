@@ -1,17 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: online-shop-child        # Child app name
+  # Name of the Online Shop child application
+  name: online-shop-child
   namespace: argocd
 spec:
-  project: default
+  project: devops-project
+
   source:
-    repoURL: https://github.com/LondheShubham153/argocd-demos.git # Repo containing child apps(that you have forked and cloned earlier)
+    # Git repository containing declarative manifests
+    repoURL: https://github.com/MrSharma151/argocd-demos.git
     targetRevision: main
-    path: declarative_approach/online_shop  # path of Online Shop app in `argocd-demos` repo
+    # Path of Online Shop application
+    path: declarative_approach/online_shop
+
   destination:
-    server: https://172.31.6.84:33893 # Replace with your Cluster Url, To get run: `argocd cluster list`
-    namespace: default
+    # In-cluster Kubernetes API
+    server: https://kubernetes.default.svc
+    # Dedicated namespace for Online Shop
+    namespace: online-shop
+
   syncPolicy:
     automated:
       prune: true
