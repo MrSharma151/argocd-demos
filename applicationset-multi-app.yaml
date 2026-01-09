@@ -4,59 +4,55 @@ metadata:
   # Name of the ApplicationSet
   name: multi-app-applicationset
 
-  # ApplicationSet must be created in argocd namespace
+  # ApplicationSet must live in argocd namespace
   namespace: argocd
 
 spec:
-  # Generator defines how ArgoCD discovers applications from Git
+  # Git directory generator
   generators:
   - git:
-      # Git repository containing application manifests
+      # Repository containing application manifests
       repoURL: https://github.com/MrSharma151/argocd-demos.git
 
-      # Git branch to track
+      # Branch to track
       revision: main
 
-      # Directory generator: one ArgoCD Application per directory
+      # One ArgoCD Application will be created per directory
       directories:
-      # Chai application (ApplicationSet demo)
       - path: applicationsets/chai-app
+      - path: declarative_approach/online-shop
 
-      # Online Shop application (Declarative GitOps demo)
-      - path: declarative_approach/online_shop
-
-  # Template defines how each generated Application is created
+  # Template used to generate ArgoCD Applications
   template:
     metadata:
       # Application name derived from directory name
-      # Example:
-      # applicationsets/chai-app        → chai-app
-      # declarative_approach/online_shop → online-shop
+      # chai-app        → chai-app
+      # online-shop     → online-shop
       name: '{{path.basename}}'
 
     spec:
-      # ArgoCD Project (previously created)
+      # ArgoCD project
       project: devops-project
 
       source:
-        # Git repository source
+        # Git source details
         repoURL: https://github.com/MrSharma151/argocd-demos.git
         targetRevision: main
 
-        # Path is dynamically populated by the generator
+        # Directory path for this application
         path: '{{path}}'
 
       destination:
-        # Deploy to the same cluster where ArgoCD is running
+        # Deploy into the same cluster where ArgoCD is running
         server: https://kubernetes.default.svc
 
-        # Namespace is dynamically created using app name
+        # Each app deploys into its own namespace
         namespace: '{{path.basename}}'
 
       syncPolicy:
         automated:
-          # Automatically remove resources deleted from Git
+          # Delete resources removed from Git
           prune: true
 
-          # Automatically correct manual changes
+          # Revert manual changes automatically
           selfHeal: true

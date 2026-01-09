@@ -12,7 +12,7 @@ spec:
     repoURL: https://github.com/MrSharma151/argocd-demos.git
     targetRevision: main
     # Path of Online Shop application
-    path: declarative_approach/online_shop
+    path: declarative_approach/online-shop
 
   destination:
     # In-cluster Kubernetes API
