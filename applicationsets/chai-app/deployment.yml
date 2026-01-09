@@ -1,7 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  # Name of the deployment
   name: chai-app
+  namespace: chai-app
 spec:
   replicas: 3
   selector:
@@ -14,15 +16,20 @@ spec:
     spec:
       containers:
       - name: chai-app
+        # Application container image
         image: trainwithshubham/chai-devopsssss:v1.0.0
         ports:
         - containerPort: 80
+
+        # Environment variables from Kubernetes Secret
         env:
         - name: VITE_GEMINI_API
           valueFrom:
             secretKeyRef:
               name: chai-app-secret
               key: VITE_GEMINI_API
+
+        # Resource requests and limits (good GitOps practice)
         resources:
           requests:
             memory: "64Mi"

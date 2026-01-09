@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # Name of the ArgoCD application
+  name: online-shop-multicluster
+
+  # ArgoCD applications must be created in the argocd namespace
+  namespace: argocd
+
+spec:
+  # ArgoCD project (can be restricted later)
+  project: default
+
+  source:
+    # Git repository containing Kubernetes manifests
+    repoURL: https://github.com/MrSharma151/argocd-demos.git
+
+    # Git branch or tag to track
+    targetRevision: main
+
+    # Path inside the repository for application manifests
+    path: declarative_approach/online_shop
+
+  destination:
+    # Target cluster API server
+    # For in-cluster deployments:
+    # server: https://kubernetes.default.svc
+    #
+    # For remote cluster deployments (AKS/EKS/GKE):
+    server: https://<REMOTE-CLUSTER-API-ENDPOINT>
+
+    # Namespace where the application will be deployed
+    namespace: online-shop
+
+  syncPolicy:
+    automated:
+      # Automatically delete resources removed from Git
+      prune: true
+
+      # Automatically revert manual changes (drift correction)
+      selfHeal: true

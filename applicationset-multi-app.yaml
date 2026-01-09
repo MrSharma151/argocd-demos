@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  # Name of the ApplicationSet
+  name: multi-app-applicationset
+
+  # ApplicationSet must be created in argocd namespace
+  namespace: argocd
+
+spec:
+  # Generator defines how ArgoCD discovers applications from Git
+  generators:
+  - git:
+      # Git repository containing application manifests
+      repoURL: https://github.com/MrSharma151/argocd-demos.git
+
+      # Git branch to track
+      revision: main
+
+      # Directory generator: one ArgoCD Application per directory
+      directories:
+      # Chai application (ApplicationSet demo)
+      - path: applicationsets/chai-app
+
+      # Online Shop application (Declarative GitOps demo)
+      - path: declarative_approach/online_shop
+
+  # Template defines how each generated Application is created
+  template:
+    metadata:
+      # Application name derived from directory name
+      # Example:
+      # applicationsets/chai-app        → chai-app
+      # declarative_approach/online_shop → online-shop
+      name: '{{path.basename}}'
+
+    spec:
+      # ArgoCD Project (previously created)
+      project: devops-project
+
+      source:
+        # Git repository source
+        repoURL: https://github.com/MrSharma151/argocd-demos.git
+        targetRevision: main
+
+        # Path is dynamically populated by the generator
+        path: '{{path}}'
+
+      destination:
+        # Deploy to the same cluster where ArgoCD is running
+        server: https://kubernetes.default.svc
+
+        # Namespace is dynamically created using app name
+        namespace: '{{path.basename}}'
+
+      syncPolicy:
+        automated:
+          # Automatically remove resources deleted from Git
+          prune: true
+
+          # Automatically correct manual changes
+          selfHeal: true
