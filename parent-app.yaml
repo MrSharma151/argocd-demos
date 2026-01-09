@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # Parent application name
+  name: platform-apps
+
+  # ArgoCD applications must live in argocd namespace
+  namespace: argocd
+
+spec:
+  # ArgoCD project
+  project: devops-project
+
+  source:
+    # Git repository containing child application manifests
+    repoURL: https://github.com/MrSharma151/argocd-demos.git
+
+    # Branch to track
+    targetRevision: main
+
+    # Path where all child Application YAMLs are stored
+    path: app-of-apps/apps
+
+  destination:
+    # In-cluster Kubernetes API (BEST PRACTICE)
+    server: https://kubernetes.default.svc
+
+    # Namespace is argocd because child apps are ArgoCD Applications
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      # Automatically remove child apps removed from Git
+      prune: true
+
+      # Automatically fix drift in child apps
+      selfHeal: true
