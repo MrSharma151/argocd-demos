@@ -19,7 +19,7 @@ spec:
     targetRevision: main
 
     # Path where all child Application YAMLs are stored
-    path: app-of-apps
+    path: app_of_apps
 
   destination:
     # In-cluster Kubernetes API (BEST PRACTICE)
