@@ -42,13 +42,13 @@ spec:
       # --------------------------------------------------------
       annotations:
         # Notify when application is successfully deployed
-        notifications.argoproj.io/subscribe.on-deployed.email: "true"
+        notifications.argoproj.io/subscribe.on-deployed.email: "rhs.rohitsharma@gmail.com"
 
         # Notify when application health becomes degraded
-        notifications.argoproj.io/subscribe.on-health-degraded.email: "true"
+        notifications.argoproj.io/subscribe.on-health-degraded.email: "rhs.rohitsharma@gmail.com"
 
         # Notify when application sync fails or errors
-        notifications.argoproj.io/subscribe.on-sync-failed.email: "true"
+        notifications.argoproj.io/subscribe.on-sync-failed.email: "rhs.rohitsharma@gmail.com"
 
     spec:
       # ArgoCD Project for access control and governance
