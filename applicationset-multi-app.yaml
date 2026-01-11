@@ -1,65 +1,86 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  # Name of the ApplicationSet
+  # Name of the ApplicationSet resource
   name: multi-app-applicationset
 
-  # ApplicationSet must live in argocd namespace
+  # ApplicationSet must be created in the argocd namespace
   namespace: argocd
 
-  # Annotations to subscribe to notifications
-  annotations:
-    notifications.argoproj.io/subscribe.on-deployed.email: "true"
-    notifications.argoproj.io/subscribe.on-health-degraded.email: "true"
-    notifications.argoproj.io/subscribe.on-sync-failed.email: "true"
-
-
 spec:
-  # Git directory generator
+  # ------------------------------------------------------------
+  # Generator: Git Directory Generator
+  # One ArgoCD Application will be generated per directory
+  # ------------------------------------------------------------
   generators:
   - git:
-      # Repository containing application manifests
+      # Git repository containing application manifests
       repoURL: https://github.com/MrSharma151/argocd-demos.git
 
-      # Branch to track
+      # Git branch to track
       revision: main
 
-      # One ArgoCD Application will be created per directory
+      # Each directory below will generate one Application
       directories:
       - path: applicationsets/chai-app
       - path: declarative_approach/online-shop
 
-  # Template used to generate ArgoCD Applications
+  # ------------------------------------------------------------
+  # Template: Defines how generated Applications look
+  # ------------------------------------------------------------
   template:
     metadata:
       # Application name derived from directory name
-      # chai-app        → chai-app
-      # online-shop     → online-shop
+      # applicationsets/chai-app      → chai-app
+      # declarative_approach/online-shop → online-shop
       name: '{{path.basename}}'
 
+      # --------------------------------------------------------
+      # Notification subscriptions
+      # IMPORTANT: Notifications MUST be defined on Application,
+      # not on ApplicationSet
+      # --------------------------------------------------------
+      annotations:
+        # Notify when application is successfully deployed
+        notifications.argoproj.io/subscribe.on-deployed.email: "true"
+
+        # Notify when application health becomes degraded
+        notifications.argoproj.io/subscribe.on-health-degraded.email: "true"
+
+        # Notify when application sync fails or errors
+        notifications.argoproj.io/subscribe.on-sync-failed.email: "true"
+
     spec:
-      # ArgoCD project
+      # ArgoCD Project for access control and governance
       project: devops-project
 
+      # --------------------------------------------------------
+      # Source: Git repository details
+      # --------------------------------------------------------
       source:
-        # Git source details
         repoURL: https://github.com/MrSharma151/argocd-demos.git
         targetRevision: main
 
-        # Directory path for this application
+        # Path is dynamically injected by the generator
         path: '{{path}}'
 
+      # --------------------------------------------------------
+      # Destination: Where the application will be deployed
+      # --------------------------------------------------------
       destination:
         # Deploy into the same cluster where ArgoCD is running
         server: https://kubernetes.default.svc
 
-        # Each app deploys into its own namespace
+        # Each application deploys into its own namespace
         namespace: '{{path.basename}}'
 
+      # --------------------------------------------------------
+      # Sync Policy: Automated GitOps behavior
+      # --------------------------------------------------------
       syncPolicy:
         automated:
-          # Delete resources removed from Git
+          # Automatically delete resources removed from Git
           prune: true
 
-          # Revert manual changes automatically
+          # Automatically revert manual changes (self-healing)
           selfHeal: true
