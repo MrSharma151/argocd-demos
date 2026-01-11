@@ -1,0 +1,30 @@
+# -------------------------------------------------
+# Kubernetes Secrets (NEVER commit secrets)
+# -------------------------------------------------
+**/secret*.yml
+**/secret*.yaml
+**/*secret*.yml
+**/*secret*.yaml
+
+# Specific sensitive files
+email_notifications/secret-smtp.yaml
+
+# -------------------------------------------------
+# Local environment / editor files
+# -------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.log
+
+# -------------------------------------------------
+# OS specific
+# -------------------------------------------------
+.DS_Store
+Thumbs.db
+
+# -------------------------------------------------
+# Backup / temp files
+# -------------------------------------------------
+*~
+*.bak

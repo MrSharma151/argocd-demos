@@ -7,6 +7,13 @@ metadata:
   # ApplicationSet must live in argocd namespace
   namespace: argocd
 
+  # Annotations to subscribe to notifications
+  annotations:
+    notifications.argoproj.io/subscribe.on-deployed.email: "true"
+    notifications.argoproj.io/subscribe.on-health-degraded.email: "true"
+    notifications.argoproj.io/subscribe.on-sync-failed.email: "true"
+
+
 spec:
   # Git directory generator
   generators:

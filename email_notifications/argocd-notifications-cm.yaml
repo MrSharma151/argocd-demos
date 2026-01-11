@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  # ConfigMap used by ArgoCD Notifications controller
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  # ------------------------------------------------------------
+  # Context: variables available inside notification templates
+  # ------------------------------------------------------------
+  context: |
+    # ArgoCD server URL (local environment using port-forward)
+    argocdUrl: "http://localhost:8081"
+
+  # ------------------------------------------------------------
+  # Email service configuration (SMTP)
+  # Credentials are stored securely in Kubernetes Secret
+  # ------------------------------------------------------------
+  service.email: |
+    username: $email-username        # Gmail username (from Secret)
+    password: $email-password        # Gmail App Password (from Secret)
+    host: smtp.gmail.com             # Gmail SMTP server
+    port: 465                        # SMTP SSL port
+    from: $email-username            # Sender email address
+    to: rhs.rohitsharma@gmail.com    # Receiver email address
+
+  # ------------------------------------------------------------
+  # Template: Application health degraded notification
+  # ------------------------------------------------------------
+  template.email-health-degraded: |
+    email:
+      subject: "[ArgoCD] 🚨 {{.app.metadata.name}} health is {{.app.status.health.status}}"
+    message: |
+      🚨 Application Health Alert
+
+      Application: {{.app.metadata.name}}
+      Namespace: {{.app.metadata.namespace}}
+
+      Sync Status: {{.app.status.sync.status}}
+      Health Status: {{.app.status.health.status}}
+      Health Message: {{.app.status.health.message}}
+
+      Revision: {{.app.status.sync.revision}}
+      Last Operation: {{ if .app.operationState }}{{ .app.operationState.phase }}{{ else }}N/A{{ end }}
+
+      View Application:
+      {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+
+  # ------------------------------------------------------------
+  # Template: Successful deployment notification
+  # ------------------------------------------------------------
+  template.email-deployed: |
+    email:
+      subject: "[ArgoCD] ✅ {{.app.metadata.name}} successfully deployed"
+    message: |
+      🎉 Application Deployment Successful
+
+      Application: {{.app.metadata.name}}
+      Namespace: {{.app.metadata.namespace}}
+
+      Sync Status: {{.app.status.sync.status}}
+      Health Status: {{.app.status.health.status}}
+      Revision: {{.app.status.sync.revision}}
+
+      Finished At: {{ if .app.operationState }}{{ .app.operationState.finishedAt }}{{ end }}
+
+      View Application:
+      {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+
+  # ------------------------------------------------------------
+  # Template: Sync failed or error notification
+  # ------------------------------------------------------------
+  template.email-sync-failed: |
+    email:
+      subject: "[ArgoCD] ❌ {{.app.metadata.name}} sync failed"
+    message: |
+      ❌ Application Sync Failure
+
+      Application: {{.app.metadata.name}}
+      Namespace: {{.app.metadata.namespace}}
+
+      Sync Status: {{.app.status.sync.status}}
+      Operation Phase: {{ if .app.operationState }}{{ .app.operationState.phase }}{{ else }}N/A{{ end }}
+      Message: {{ if .app.operationState }}{{ .app.operationState.message }}{{ end }}
+
+      View Application:
+      {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+
+  # ------------------------------------------------------------
+  # Triggers: define WHEN notifications should be sent
+  # ------------------------------------------------------------
+
+  # Trigger when application health becomes degraded
+  trigger.on-health-degraded: |
+    - when: app.status.health.status == 'Degraded'
+      send: [email-health-degraded]
+
+  # Trigger when application is successfully synced and healthy
+  trigger.on-deployed: |
+    - when: app.status.operationState.phase == 'Succeeded' and app.status.health.status == 'Healthy'
+      send: [email-deployed]
+
+  # Trigger when sync fails or encounters error
+  trigger.on-sync-failed: |
+    - when: app.status.operationState.phase in ['Failed', 'Error']
+      send: [email-sync-failed]
